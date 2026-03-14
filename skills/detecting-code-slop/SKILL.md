@@ -5,7 +5,7 @@ description: Use when reviewing AI-generated code changes for quality issues —
 
 # Detecting Code Slop
 
-Code slop: characteristic low-quality patterns in AI-generated code. Two-phase detection: mechanical grep, then LLM judgment.
+Code slop: characteristic low-quality patterns in AI-generated code. Two-phase detection: mechanical scan, then LLM judgment.
 
 ## Scope
 
@@ -18,29 +18,15 @@ Code slop: characteristic low-quality patterns in AI-generated code. Two-phase d
 
 ## Phase 1: Mechanical Scan
 
-Run these against the diff. Record every hit as `file:line — matched text`.
+Read `patterns.md` in this skill directory for full grep patterns and signals.
 
-| Pattern | Grep/Regex |
-|---------|-----------|
-| Stubs & placeholders | `grep -nE 'TODO\|FIXME\|NotImplementedError\|throw new Error\(.(not implemented\|todo)'` and `pass` in non-`__init__` methods, empty function bodies `\{\s*\}` |
-| Sycophantic comments | `grep -nE '^\+\s*(//\|#\|/\*\*?\|[*])\s*(This (function\|method\|class\|module) (does\|is\|will\|handles\|provides\|ensures\|represents))'` — also flag docstrings that restate the function name |
-| Copy-paste artifacts | 3+ added blocks sharing >80% token similarity within the diff |
-| Commented-out code | `grep -nE '^\+\s*(//\|#)\s*(if\|for\|while\|return\|const\|let\|var\|def\|class\|import) '` — blocks of commented real code, not explanatory comments |
+Scan the diff for Tier 1 patterns: **stubs & placeholders, sycophantic comments, copy-paste artifacts, commented-out code.** Record every hit as `file:line — matched text`.
 
 ## Phase 2: LLM Review
 
-Check EVERY pattern below against the diff. Do not skip any.
+Read `patterns.md` for detailed signals per pattern.
 
-| Pattern | Look for |
-|---------|----------|
-| Scope divergence | Files/functions unrelated to task, unrequested refactoring or features |
-| Semantic duplication | Different-named functions doing the same thing |
-| Over-engineering | Abstractions with one caller, config for one-time ops, speculative generality |
-| Abandoned branches | Error handling for impossible cases, unreachable if/else paths |
-| Premature generalization | Parameters nobody passes, unused options |
-| Missing guardrails | No null checks, input validation, or exception handling on edge cases |
-| Over-specification | Rigid narrow solution when a general approach would be simpler |
-| Wrong-context patterns | Technically valid pattern that violates local conventions |
+Check EVERY Tier 2 pattern against the diff — do not skip any: **scope divergence, semantic duplication, over-engineering, abandoned branches, premature generalization, missing guardrails, over-specification, wrong-context patterns.**
 
 ## Output Format
 
@@ -59,7 +45,7 @@ Check EVERY pattern below against the diff. Do not skip any.
 ### Verdict: NEEDS WORK | CLEAN
 ```
 
-Verdict is CLEAN only when zero HIGH and zero MED findings remain.
+Verdict is CLEAN only when zero HIGH and zero MED findings remain. Do not add extra sections — findings should be self-explanatory.
 
 ## Fix Loop (Optional)
 
